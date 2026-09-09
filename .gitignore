@@ -38,12 +38,11 @@ ScaffoldingReadMe.txt
 
 # dotenv environment variables file
 .env
-
 # Others
 ~$*
 *~
 CodeCoverage/
-
+.vs
 # MSBuild Binary and Structured Log
 *.binlog
 
