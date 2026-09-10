@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "Nuevo perfil",
+    "Projects": [
+      {
+        "Path": "ClientesAPI\\ClientesAPI.csproj",
+        "Action": "StartWithoutDebugging"
+      },
+      {
+        "Path": "CuentasAPI\\CuentasAPI.csproj",
+        "Action": "StartWithoutDebugging"
+      }
+    ]
+  }
+]

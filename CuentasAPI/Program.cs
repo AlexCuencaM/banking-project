@@ -5,6 +5,7 @@ using CuentasAPI.Repositories.Interfaces;
 using CuentasAPI.Services;
 using CuentasAPI.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using CuentasAPI.Messaging;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,6 +31,13 @@ builder.Services.AddScoped<ICuentaRepository, CuentaRepository>();
 builder.Services.AddScoped<ICuentaService, CuentaService>();
 builder.Services.AddScoped<IMovimientoRepository, MovimientoRepository>();
 builder.Services.AddScoped<IMovimientoService, MovimientoService>();
+builder.Services.AddScoped<IClienteProyeccionRepository, ClienteProyeccionRepository>();
+
+builder.Services.Configure<RabbitMqOptions>(
+    builder.Configuration.GetSection(
+        RabbitMqOptions.SectionName));
+
+builder.Services.AddHostedService<ClienteEventConsumer>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

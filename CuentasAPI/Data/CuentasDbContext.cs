@@ -1,6 +1,6 @@
 ﻿using CuentasAPI.Models;
 using Microsoft.EntityFrameworkCore;
-
+using CuentasAPI.Messaging.Inbox;
 namespace CuentasAPI.Data;
 
 public sealed class CuentasDbContext : DbContext
@@ -13,15 +13,68 @@ public sealed class CuentasDbContext : DbContext
 
     public DbSet<Cuenta> Cuentas => Set<Cuenta>();
     public DbSet<Movimiento> Movimientos => Set<Movimiento>();
+    public DbSet<ClienteProyeccion> ClientesProyeccion => Set<ClienteProyeccion>();
+    public DbSet<InboxMessage> InboxMessages => Set<InboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
+        ConfigureClienteProyeccion(modelBuilder);
+        ConfigureInbox(modelBuilder);
         ConfigureCuenta(modelBuilder);
         ConfigureMovimiento(modelBuilder);
     }
+    private static void ConfigureClienteProyeccion(
+    ModelBuilder modelBuilder)
+    {
+        var cliente =
+            modelBuilder.Entity<ClienteProyeccion>();
 
+        cliente.ToTable("ClientesProyeccion");
+
+        cliente.HasKey(x => x.ClienteId);
+
+        cliente.Property(x => x.ClienteId)
+            .ValueGeneratedNever();
+
+        cliente.Property(x => x.Nombre)
+            .HasMaxLength(150)
+            .IsRequired();
+
+        cliente.Property(x => x.Identificacion)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        cliente.Property(x => x.Estado)
+            .IsRequired();
+
+        cliente.Property(x => x.UltimoEventoEn)
+            .IsRequired();
+
+        cliente.HasIndex(x => x.Identificacion);
+    }
+
+    private static void ConfigureInbox(
+        ModelBuilder modelBuilder)
+    {
+        var inbox = modelBuilder.Entity<InboxMessage>();
+
+        inbox.ToTable("InboxMessages");
+
+        inbox.HasKey(x => x.EventId);
+
+        inbox.Property(x => x.EventId)
+            .ValueGeneratedNever();
+
+        inbox.Property(x => x.EventType)
+            .HasMaxLength(150)
+            .IsRequired();
+
+        inbox.Property(x => x.ProcessedAt)
+            .IsRequired();
+
+        inbox.HasIndex(x => x.ProcessedAt);
+    }
     private static void ConfigureCuenta(ModelBuilder modelBuilder)
     {
         var cuenta = modelBuilder.Entity<Cuenta>();

@@ -8,10 +8,14 @@ namespace CuentasAPI.Services;
 public sealed class CuentaService : ICuentaService
 {
     private readonly ICuentaRepository _repository;
+    private readonly IClienteProyeccionRepository _clientesRepository;
 
-    public CuentaService(ICuentaRepository repository)
+    public CuentaService(
+        ICuentaRepository repository,
+        IClienteProyeccionRepository clientesRepository)
     {
         _repository = repository;
+        _clientesRepository = clientesRepository;
     }
 
     public async Task<IReadOnlyList<CuentaResponse>> ObtenerTodasAsync(
@@ -45,6 +49,21 @@ public sealed class CuentaService : ICuentaService
         CancellationToken cancellationToken = default)
     {
         var numeroCuenta = request.NumeroCuenta.Trim();
+        var cliente = await _clientesRepository.ObtenerPorIdAsync(
+            request.ClienteId,
+            cancellationToken);
+
+        if (cliente is null)
+        {
+            throw new KeyNotFoundException(
+                $"No se encontró el cliente {request.ClienteId}.");
+        }
+
+        if (!cliente.Estado)
+        {
+            throw new InvalidOperationException(
+                $"El cliente {request.ClienteId} se encuentra inactivo.");
+        }
         if (request.SaldoInicial < 0)
         {
             throw new ArgumentException(
