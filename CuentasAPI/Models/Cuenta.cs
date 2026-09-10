@@ -1,23 +1,20 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using CuentasAPI.Models.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CuentasAPI.Models;
 
-public sealed class Cuenta
+public class Cuenta
 {
     public int CuentaId { get; set; }
 
-    // Identificador proveniente de ClientesAPI.
-    // No es una FK porque pertenece a otro microservicio.
     public int ClienteId { get; set; }
 
     [Required]
     [MaxLength(30)]
-    public string NumeroCuenta { get; set; } = string.Empty;
+    public string NumeroCuenta { get; set; } = null!;
 
-    [Required]
-    [MaxLength(30)]
-    public string TipoCuenta { get; set; } = string.Empty;
+    public TipoCuenta TipoCuenta { get; set; }
 
     [Column(TypeName = "decimal(18,2)")]
     public decimal SaldoInicial { get; set; }
@@ -28,8 +25,8 @@ public sealed class Cuenta
     public bool Estado { get; set; } = true;
 
     [Timestamp]
-    public byte[] Version { get; set; } = [];
+    public byte[] Version { get; set; } = null!;
 
     public ICollection<Movimiento> Movimientos { get; set; }
-        = [];
+        = new List<Movimiento>();
 }

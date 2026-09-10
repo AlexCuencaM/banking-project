@@ -62,7 +62,7 @@ public sealed class CuentaService : ICuentaService
         {
             ClienteId = request.ClienteId,
             NumeroCuenta = numeroCuenta,
-            TipoCuenta = request.TipoCuenta.Trim(),
+            TipoCuenta = request.TipoCuenta,
             SaldoInicial = request.SaldoInicial,
             SaldoDisponible = request.SaldoInicial,
             Estado = request.Estado
@@ -104,7 +104,7 @@ public sealed class CuentaService : ICuentaService
         }
 
         cuenta.NumeroCuenta = numeroCuenta;
-        cuenta.TipoCuenta = request.TipoCuenta.Trim();
+        cuenta.TipoCuenta = request.TipoCuenta;
         cuenta.Estado = request.Estado;
 
         _repository.Actualizar(cuenta);

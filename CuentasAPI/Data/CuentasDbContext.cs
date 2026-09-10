@@ -54,8 +54,9 @@ public sealed class CuentasDbContext : DbContext
 
         cuenta.HasIndex(x => x.ClienteId);
 
-        cuenta.Property(x => x.TipoCuenta)
-            .HasMaxLength(30)
+        cuenta.Property(c => c.TipoCuenta)
+            .HasConversion<string>()
+            .HasMaxLength(20)
             .IsRequired();
 
         cuenta.Property(x => x.SaldoInicial)

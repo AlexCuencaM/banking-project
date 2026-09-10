@@ -1,16 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using CuentasAPI.Models.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace CuentasAPI.DTOs.Cuentas;
 
-public sealed class ActualizarCuentaRequest
+public class ActualizarCuentaRequest
 {
     [Required]
     [MaxLength(30)]
-    public string NumeroCuenta { get; set; } = string.Empty;
+    public string NumeroCuenta { get; set; } = null!;
 
-    [Required]
-    [MaxLength(30)]
-    public string TipoCuenta { get; set; } = string.Empty;
+    [EnumDataType(typeof(TipoCuenta))]
+    public TipoCuenta TipoCuenta { get; set; }
 
     public bool Estado { get; set; }
 }
