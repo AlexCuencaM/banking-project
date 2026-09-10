@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="ClientesAPI/ClientesAPI.csproj" />
+  <Project Path="ClientesAPITester/ClientesAPITester.csproj" Id="a5ae1727-132c-4717-9e21-ed4dad9563fb" />
   <Project Path="CuentasAPI/CuentasAPI.csproj" />
 </Solution>
