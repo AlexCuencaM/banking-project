@@ -1,13 +1,17 @@
 using CuentasAPI.Data;
+using CuentasAPI.Middleware;
+using CuentasAPI.Repositories;
+using CuentasAPI.Repositories.Interfaces;
+using CuentasAPI.Services;
+using CuentasAPI.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
+
 var connectionString =
     builder.Configuration.GetConnectionString("CuentasDb")
     ?? throw new InvalidOperationException(
@@ -15,18 +19,20 @@ var connectionString =
 
 builder.Services.AddDbContext<CuentasDbContext>(options =>
     options.UseSqlServer(connectionString));
+
+builder.Services.AddScoped<ICuentaRepository, CuentaRepository>();
+builder.Services.AddScoped<ICuentaService, CuentaService>();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
