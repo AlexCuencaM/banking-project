@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
+using CuentasAPI.Exceptions;
 namespace CuentasAPI.Middleware;
 
 public sealed class ExceptionHandlingMiddleware
@@ -34,6 +34,9 @@ public sealed class ExceptionHandlingMiddleware
     {
         var (statusCode, title) = exception switch
         {
+            SaldoNoDisponibleException =>
+                (StatusCodes.Status400BadRequest, "Saldo no disponible"),
+
             KeyNotFoundException =>
                 (StatusCodes.Status404NotFound, "Recurso no encontrado"),
 

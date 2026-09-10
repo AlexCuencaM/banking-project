@@ -28,7 +28,8 @@ builder.Services.AddDbContext<CuentasDbContext>(options =>
 
 builder.Services.AddScoped<ICuentaRepository, CuentaRepository>();
 builder.Services.AddScoped<ICuentaService, CuentaService>();
-
+builder.Services.AddScoped<IMovimientoRepository, MovimientoRepository>();
+builder.Services.AddScoped<IMovimientoService, MovimientoService>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
