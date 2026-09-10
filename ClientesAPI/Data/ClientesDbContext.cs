@@ -1,7 +1,5 @@
 ﻿using ClientesAPI.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection.Emit;
-
 namespace ClientesAPI.Data;
 
 public sealed class ClientesDbContext : DbContext
