@@ -7,7 +7,7 @@ using ClientesAPI.Services;
 using ClientesAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-
+using ClientesAPI.Messaging;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
@@ -28,7 +28,11 @@ builder.Services.AddScoped<IClienteService, ClienteService>();
 builder.Services.AddScoped<
     IPasswordHasher<Cliente>,
     PasswordHasher<Cliente>>();
+builder.Services.Configure<RabbitMqOptions>(
+    builder.Configuration.GetSection(
+        RabbitMqOptions.SectionName));
 
+builder.Services.AddHostedService<OutboxPublisher>();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

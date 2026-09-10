@@ -1,5 +1,6 @@
 ﻿using ClientesAPI.Models;
 using Microsoft.EntityFrameworkCore;
+using ClientesAPI.Messaging.Outbox;
 namespace ClientesAPI.Data;
 
 public sealed class ClientesDbContext : DbContext
@@ -11,15 +12,54 @@ public sealed class ClientesDbContext : DbContext
 
     public DbSet<Persona> Personas => Set<Persona>();
     public DbSet<Cliente> Clientes => Set<Cliente>();
-
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
+        ConfigureOutbox(modelBuilder);
         ConfigurePersona(modelBuilder);
         ConfigureCliente(modelBuilder);
     }
+    private static void ConfigureOutbox(ModelBuilder modelBuilder)
+    {
+        var outbox = modelBuilder.Entity<OutboxMessage>();
 
+        outbox.ToTable("OutboxMessages");
+
+        outbox.HasKey(x => x.Id);
+
+        outbox.Property(x => x.Id)
+            .ValueGeneratedNever();
+
+        outbox.Property(x => x.EventType)
+            .HasMaxLength(150)
+            .IsRequired();
+
+        outbox.Property(x => x.RoutingKey)
+            .HasMaxLength(150)
+            .IsRequired();
+
+        outbox.Property(x => x.Payload)
+            .IsRequired();
+
+        outbox.Property(x => x.OccurredAt)
+            .IsRequired();
+
+        outbox.Property(x => x.PublishedAt);
+
+        outbox.Property(x => x.Attempts)
+            .HasDefaultValue(0)
+            .IsRequired();
+
+        outbox.Property(x => x.LastError)
+            .HasMaxLength(2000);
+
+        outbox.HasIndex(x => new
+        {
+            x.PublishedAt,
+            x.OccurredAt
+        });
+    }
     private static void ConfigurePersona(ModelBuilder modelBuilder)
     {
         var persona = modelBuilder.Entity<Persona>();

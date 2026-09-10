@@ -1,5 +1,5 @@
 ﻿using ClientesAPI.Models;
-
+using ClientesAPI.Messaging.Outbox;
 namespace ClientesAPI.Repositories.Interfaces;
 
 public interface IClienteRepository
@@ -16,8 +16,13 @@ public interface IClienteRepository
         int? clienteIdExcluir = null,
         CancellationToken cancellationToken = default);
 
-    Task AgregarAsync(
+    Task CrearConEventoAsync(
         Cliente cliente,
+        Func<Cliente, OutboxMessage> construirEvento,
+        CancellationToken cancellationToken = default);
+
+    Task AgregarEventoAsync(
+        OutboxMessage mensaje,
         CancellationToken cancellationToken = default);
 
     void Actualizar(Cliente cliente);

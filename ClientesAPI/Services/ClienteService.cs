@@ -3,7 +3,9 @@ using ClientesAPI.Models;
 using ClientesAPI.Repositories.Interfaces;
 using ClientesAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
-
+using ClientesAPI.Messaging.Contracts;
+using ClientesAPI.Messaging.Outbox;
+using System.Text.Json;
 namespace ClientesAPI.Services;
 
 public sealed class ClienteService : IClienteService
@@ -18,7 +20,8 @@ public sealed class ClienteService : IClienteService
         _repository = repository;
         _passwordHasher = passwordHasher;
     }
-
+    private static readonly JsonSerializerOptions JsonOptions =
+        new(JsonSerializerDefaults.Web);
     public async Task<IReadOnlyList<ClienteResponse>> ObtenerTodosAsync(
         CancellationToken cancellationToken = default)
     {
@@ -75,11 +78,13 @@ public sealed class ClienteService : IClienteService
                 cliente,
                 request.Contrasena);
 
-        await _repository.AgregarAsync(
+        await _repository.CrearConEventoAsync(
             cliente,
+            clienteGuardado => CrearEvento(
+                clienteGuardado,
+                ClienteEventTypes.Creado,
+                ClienteRoutingKeys.Creado),
             cancellationToken);
-
-        await _repository.GuardarCambiosAsync(cancellationToken);
 
         return Mapear(cliente);
     }
@@ -126,6 +131,16 @@ public sealed class ClienteService : IClienteService
         }
 
         _repository.Actualizar(cliente);
+        var evento = CrearEvento(
+            cliente,
+            ClienteEventTypes.Actualizado,
+            ClienteRoutingKeys.Actualizado);
+
+                _repository.Actualizar(cliente);
+
+                await _repository.AgregarEventoAsync(
+                    evento,
+                    cancellationToken);
 
         await _repository.GuardarCambiosAsync(cancellationToken);
     }
@@ -143,12 +158,51 @@ public sealed class ClienteService : IClienteService
             throw new KeyNotFoundException(
                 $"No se encontró el cliente {clienteId}.");
         }
+        var evento = CrearEvento(
+            cliente,
+            ClienteEventTypes.Eliminado,
+            ClienteRoutingKeys.Eliminado,
+            estado: false);
 
         _repository.Eliminar(cliente);
 
+        await _repository.AgregarEventoAsync(
+            evento,
+            cancellationToken);
+
         await _repository.GuardarCambiosAsync(cancellationToken);
     }
+    private static OutboxMessage CrearEvento(
+        Cliente cliente,
+        string eventType,
+        string routingKey,
+        bool? estado = null)
+    {
+        var eventId = Guid.NewGuid();
+        var occurredAt = DateTime.UtcNow;
 
+        var evento = new ClienteIntegrationEvent(
+            EventId: eventId,
+            EventType: eventType,
+            Version: 1,
+            OccurredAt: occurredAt,
+            Data: new ClienteEventData(
+                ClienteId: cliente.Id,
+                Nombre: cliente.Nombre,
+                Identificacion: cliente.Identificacion,
+                Estado: estado ?? cliente.Estado));
+
+        return new OutboxMessage
+        {
+            Id = eventId,
+            EventType = eventType,
+            RoutingKey = routingKey,
+            Payload = JsonSerializer.Serialize(
+                evento,
+                JsonOptions),
+            OccurredAt = occurredAt
+        };
+    }
     private static ClienteResponse Mapear(Cliente cliente)
     {
         return new ClienteResponse

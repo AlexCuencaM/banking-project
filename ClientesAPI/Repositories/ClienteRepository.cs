@@ -2,7 +2,7 @@
 using ClientesAPI.Models;
 using ClientesAPI.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-
+using ClientesAPI.Messaging.Outbox;
 namespace ClientesAPI.Repositories;
 
 public sealed class ClienteRepository : IClienteRepository
@@ -46,12 +46,39 @@ public sealed class ClienteRepository : IClienteRepository
             cancellationToken);
     }
 
-    public async Task AgregarAsync(
-        Cliente cliente,
-        CancellationToken cancellationToken = default)
+    public async Task CrearConEventoAsync(
+    Cliente cliente,
+    Func<Cliente, OutboxMessage> construirEvento,
+    CancellationToken cancellationToken = default)
     {
+        await using var transaction =
+            await _context.Database.BeginTransactionAsync(
+                cancellationToken);
+
         await _context.Clientes.AddAsync(
             cliente,
+            cancellationToken);
+
+        // Primer guardado para obtener el Id identity.
+        await _context.SaveChangesAsync(cancellationToken);
+
+        var mensaje = construirEvento(cliente);
+
+        await _context.OutboxMessages.AddAsync(
+            mensaje,
+            cancellationToken);
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        await transaction.CommitAsync(cancellationToken);
+    }
+
+    public async Task AgregarEventoAsync(
+        OutboxMessage mensaje,
+        CancellationToken cancellationToken = default)
+    {
+        await _context.OutboxMessages.AddAsync(
+            mensaje,
             cancellationToken);
     }
 
