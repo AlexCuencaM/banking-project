@@ -42,6 +42,16 @@ builder.Services.Configure<RabbitMqOptions>(
 builder.Services.AddHostedService<ClienteEventConsumer>();
 var app = builder.Build();
 
+if (app.Environment.IsEnvironment("Docker"))
+{
+    await using var scope = app.Services.CreateAsyncScope();
+
+    var context = scope.ServiceProvider
+        .GetRequiredService<CuentasDbContext>();
+
+    await context.Database.MigrateAsync();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

@@ -35,6 +35,16 @@ builder.Services.Configure<RabbitMqOptions>(
 builder.Services.AddHostedService<OutboxPublisher>();
 var app = builder.Build();
 
+if (app.Environment.IsEnvironment("Docker"))
+{
+    await using var scope = app.Services.CreateAsyncScope();
+
+    var context = scope.ServiceProvider
+        .GetRequiredService<ClientesDbContext>();
+
+    await context.Database.MigrateAsync();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
