@@ -130,18 +130,14 @@ public sealed class ClienteService : IClienteService
                     request.Contrasena);
         }
 
-        _repository.Actualizar(cliente);
         var evento = CrearEvento(
             cliente,
             ClienteEventTypes.Actualizado,
             ClienteRoutingKeys.Actualizado);
-
-                _repository.Actualizar(cliente);
-
-                await _repository.AgregarEventoAsync(
-                    evento,
-                    cancellationToken);
-
+         _repository.Actualizar(cliente);
+        await _repository.AgregarEventoAsync(
+            evento,
+            cancellationToken);
         await _repository.GuardarCambiosAsync(cancellationToken);
     }
 
