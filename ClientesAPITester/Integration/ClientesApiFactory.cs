@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-
+using Microsoft.EntityFrameworkCore.Infrastructure;
 namespace ClientesAPITester.Integration;
 
 public sealed class ClientesApiFactory
@@ -44,7 +44,13 @@ public sealed class ClientesApiFactory
             {
                 services.Remove(descriptor);
             }
+            services.RemoveAll<
+                IDbContextOptionsConfiguration<ClientesDbContext>>();
 
+            services.RemoveAll<
+                DbContextOptions<ClientesDbContext>>();
+
+            services.RemoveAll<ClientesDbContext>();
             // Base aislada para esta ejecución.
             services.AddDbContext<ClientesDbContext>(
                 options =>
