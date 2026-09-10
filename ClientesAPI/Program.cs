@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 using ClientesAPI.Data;
 using Microsoft.EntityFrameworkCore;
 
